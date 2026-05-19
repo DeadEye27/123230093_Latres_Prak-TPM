@@ -1,49 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'home_page.dart';
-import 'register_page.dart';
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+class RegisterPage extends StatefulWidget {
+  const RegisterPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<RegisterPage> createState() => _RegisterPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  void _login() async {
+  void _register() async {
     String username = _usernameController.text;
     String password = _passwordController.text;
 
     if (username.isNotEmpty && password.isNotEmpty) {
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      
-      // Mengambil data yang didaftarkan
-      String? registeredUsername = prefs.getString('registered_username');
-      String? registeredPassword = prefs.getString('registered_password');
+      // Menyimpan data registrasi
+      await prefs.setString('registered_username', username);
+      await prefs.setString('registered_password', password);
 
-      // Validasi Login
-      if (username == registeredUsername && password == registeredPassword) {
-        // Simpan username yang sedang aktif login untuk ditampilkan di AppBar Halaman Utama
-        await prefs.setString('username', username);
-        
-        if (mounted) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const HomePage()),
-          );
-        }
-      } else {
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Username atau Password salah!')),
+          const SnackBar(content: Text('Registrasi Berhasil! Silakan Login.')),
         );
+        Navigator.pop(context); // Kembali ke halaman Login
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Harap isi semua kolom!')),
+        const SnackBar(content: Text('Username dan Password tidak boleh kosong!')),
       );
     }
   }
@@ -51,7 +38,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Login")),
+      appBar: AppBar(title: const Text("Register")),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -67,7 +54,7 @@ class _LoginPageState extends State<LoginPage> {
             const SizedBox(height: 16),
             TextField(
               controller: _passwordController,
-              obscureText: true,
+              obscureText: true, // Menyembunyikan teks password
               decoration: const InputDecoration(
                 labelText: "Password",
                 border: OutlineInputBorder(),
@@ -75,18 +62,9 @@ class _LoginPageState extends State<LoginPage> {
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: _login,
-              child: const Text("Login"),
+              onPressed: _register,
+              child: const Text("Register"),
             ),
-            TextButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const RegisterPage()),
-                );
-              },
-              child: const Text("Belum punya akun? Register di sini"),
-            )
           ],
         ),
       ),

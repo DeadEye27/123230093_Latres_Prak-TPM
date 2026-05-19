@@ -1,3 +1,4 @@
+// lib/pages/detail_page.dart
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/space_item.dart';
@@ -29,6 +30,11 @@ class _DetailPageState extends State<DetailPage> {
     }
   }
 
+  String _formatDate(String? isoDate) {
+    if (isoDate == null) return '';
+    return isoDate.split('T')[0]; 
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<SpaceItem>(
@@ -36,12 +42,12 @@ class _DetailPageState extends State<DetailPage> {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Scaffold(
-            appBar: AppBar(title: const Text("Detail")),
+            appBar: AppBar(title: const Text("News Detail")),
             body: const Center(child: CircularProgressIndicator()),
           );
         } else if (snapshot.hasError) {
           return Scaffold(
-            appBar: AppBar(title: const Text("Detail")),
+            appBar: AppBar(title: const Text("News Detail")),
             body: Center(child: Text('Error: ${snapshot.error}')),
           );
         }
@@ -49,13 +55,36 @@ class _DetailPageState extends State<DetailPage> {
         final detailData = snapshot.data!;
         
         return Scaffold(
-          appBar: AppBar(title: const Text("Detail")),
+          backgroundColor: Colors.white,
+          appBar: AppBar(title: const Text("News Detail")),
           body: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Gambar membentang penuh tanpa padding
                 if (detailData.imageUrl != null)
-                  Image.network(detailData.imageUrl!, fit: BoxFit.cover, width: double.infinity, height: 250),
+                  Image.network(
+                    detailData.imageUrl!,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: 220,
+                    // Tambahkan errorBuilder di sini
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        width: double.infinity,
+                        height: 220,
+                        color: Colors.grey[300],
+                        child: const Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.image_not_supported, size: 50, color: Colors.grey),
+                            SizedBox(height: 8),
+                            Text("Gambar gagal dimuat", style: TextStyle(color: Colors.grey)),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
@@ -65,27 +94,37 @@ class _DetailPageState extends State<DetailPage> {
                         detailData.title,
                         style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 12),
                       Text(
-                        "Source: ${detailData.newsSite} | ${detailData.publishedAt?.split('T')[0] ?? ''}",
-                        style: const TextStyle(color: Colors.grey),
+                        detailData.newsSite,
+                        style: const TextStyle(color: Colors.grey, fontSize: 14),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 4),
+                      Text(
+                        _formatDate(detailData.publishedAt),
+                        style: const TextStyle(color: Colors.grey, fontSize: 14),
+                      ),
+                      const SizedBox(height: 20),
                       Text(
                         detailData.summary ?? 'No summary available.',
-                        style: const TextStyle(fontSize: 16),
+                        style: const TextStyle(fontSize: 16, height: 1.5, color: Colors.black87),
+                        textAlign: TextAlign.justify,
                       ),
+                      const SizedBox(height: 80), // Ruang ekstra agar teks tidak tertutup FAB
                     ],
                   ),
                 ),
               ],
             ),
           ),
+          // Floating button gelap bergaya desain PDF
           floatingActionButton: detailData.url != null
               ? FloatingActionButton.extended(
+                  backgroundColor: const Color(0xFF1E1E1E), // Warna hitam gelap
+                  foregroundColor: Colors.white,
                   onPressed: () => _launchUrl(detailData.url!),
-                  icon: const Icon(Icons.open_in_browser),
-                  label: const Text("See more..."),
+                  icon: const Icon(Icons.web, size: 20),
+                  label: const Text("See more...", style: TextStyle(fontWeight: FontWeight.bold)),
                 )
               : null,
         );

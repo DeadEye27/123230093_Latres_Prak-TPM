@@ -1,3 +1,4 @@
+// lib/main.dart
 import 'package:flutter/material.dart';
 import 'pages/login_page.dart';
 
@@ -13,6 +14,12 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Spaceflight App',
       theme: ThemeData(
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFF212124), // Warna gelap ala desain soal
+          foregroundColor: Colors.white,
+          centerTitle: true,
+        ),
+        scaffoldBackgroundColor: const Color(0xFFF3F4F6),
         primarySwatch: Colors.deepPurple,
       ),
       home: const LoginPage(),

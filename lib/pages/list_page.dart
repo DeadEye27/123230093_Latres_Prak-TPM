@@ -1,3 +1,4 @@
+// lib/pages/list_page.dart
 import 'package:flutter/material.dart';
 import '../models/space_item.dart';
 import '../services/api_service.dart';
@@ -22,6 +23,12 @@ class _ListPageState extends State<ListPage> {
     futureList = ApiService.fetchList(widget.endpoint);
   }
 
+  String _formatDate(String? isoDate) {
+    if (isoDate == null) return '';
+    // Format sederhana YYYY-MM-DD
+    return isoDate.split('T')[0]; 
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -39,17 +46,16 @@ class _ListPageState extends State<ListPage> {
 
           final listData = snapshot.data!;
           return ListView.builder(
+            padding: const EdgeInsets.all(12),
             itemCount: listData.length,
             itemBuilder: (context, index) {
               final item = listData[index];
               return Card(
-                margin: const EdgeInsets.all(8),
-                child: ListTile(
-                  leading: item.imageUrl != null
-                      ? Image.network(item.imageUrl!, width: 80, fit: BoxFit.cover)
-                      : const Icon(Icons.image),
-                  title: Text(item.title, maxLines: 2, overflow: TextOverflow.ellipsis),
-                  subtitle: Text(item.newsSite),
+                elevation: 3,
+                color: const Color(0xFFF8F5FB),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                margin: const EdgeInsets.only(bottom: 16),
+                child: InkWell(
                   onTap: () {
                     Navigator.push(
                       context,
@@ -61,6 +67,61 @@ class _ListPageState extends State<ListPage> {
                       ),
                     );
                   },
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Gambar Full Width di atas Card
+                      if (item.imageUrl != null)
+                        ClipRRect(
+                          borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                          child: Image.network(
+                            item.imageUrl!,
+                            width: double.infinity,
+                            height: 180,
+                            fit: BoxFit.cover,
+                            // Tambahkan errorBuilder di sini
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                width: double.infinity,
+                                height: 180,
+                                color: Colors.grey[300],
+                                child: const Icon(Icons.broken_image, size: 50, color: Colors.grey),
+                              );
+                            },
+                          ),
+                        ),
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              item.title,
+                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              item.newsSite,
+                              style: const TextStyle(color: Colors.grey, fontSize: 13),
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  _formatDate(item.publishedAt),
+                                  style: const TextStyle(color: Colors.black54, fontSize: 13),
+                                ),
+                                const Icon(Icons.arrow_forward, size: 20, color: Colors.black54),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               );
             },
